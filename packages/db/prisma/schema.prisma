@@ -1,0 +1,180 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  name        String?
+  role        Role
+  verifiedAt  DateTime?
+  orgId       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  practitioner Practitioner?
+  children     ChildProfile[]
+  auditEvents  AuditEvent[]
+}
+
+model ChildProfile {
+  id             String   @id @default(cuid())
+  userId         String
+  name           String
+  dob            DateTime
+  preferredName  String?
+  avatar         String?
+  consentStatus  String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  parent  User    @relation(fields: [userId], references: [id])
+  links   PatientLink[]
+  sessions PromSession[]
+  notes    Note[]
+  signals  InsightSignal[]
+  consents ConsentRecord[]
+}
+
+model Practitioner {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  orgId              String?
+  verificationStatus String   @default("unverified")
+  specialties        String[]
+  user               User     @relation(fields: [userId], references: [id])
+  links              PatientLink[]
+  notes              Note[]
+}
+
+model PatientLink {
+  id             String @id @default(cuid())
+  childId        String
+  practitionerId String
+  orgId          String?
+
+  child        ChildProfile @relation(fields: [childId], references: [id])
+  practitioner Practitioner  @relation(fields: [practitionerId], references: [id])
+}
+
+model PromInstrument {
+  id          String   @id @default(cuid())
+  key         String
+  version     String
+  title       String
+  meta        Json
+  scoringSpec Json
+
+  sessions PromSession[]
+
+  @@unique([key, version])
+}
+
+model PromSession {
+  id            String   @id @default(cuid())
+  childId       String
+  instrumentId  String
+  startedAt     DateTime @default(now())
+  completedAt   DateTime?
+  status        String   @default("in_progress")
+  scoreJson     Json?
+  subscaleJson  Json?
+  flaggedAreas  String[]
+
+  child      ChildProfile   @relation(fields: [childId], references: [id])
+  instrument PromInstrument @relation(fields: [instrumentId], references: [id])
+  responses  PromResponse[]
+}
+
+model PromResponse {
+  id        String  @id @default(cuid())
+  sessionId String
+  itemId    String
+  value     Int
+
+  session PromSession @relation(fields: [sessionId], references: [id])
+}
+
+model ContentTopic {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  tags        String[]
+  summary     String
+  readingLevel String
+  pages       ContentPage[]
+}
+
+model ContentPage {
+  id          String   @id @default(cuid())
+  topicId     String
+  locale      String
+  childMdx    String
+  parentMdx   String
+  sourcesJson Json
+  version     String
+  publishedAt DateTime?
+
+  topic ContentTopic @relation(fields: [topicId], references: [id])
+
+  @@unique([topicId, locale, version])
+}
+
+model InsightSignal {
+  id          String   @id @default(cuid())
+  childId     String
+  periodStart DateTime
+  periodEnd   DateTime
+  type        String
+  severity    String
+  payloadJson Json
+
+  child ChildProfile @relation(fields: [childId], references: [id])
+}
+
+model Note {
+  id             String   @id @default(cuid())
+  childId        String
+  practitionerId String
+  body           String
+  createdAt      DateTime @default(now())
+  visibility     String
+
+  child        ChildProfile @relation(fields: [childId], references: [id])
+  practitioner Practitioner  @relation(fields: [practitionerId], references: [id])
+}
+
+model AuditEvent {
+  id          String   @id @default(cuid())
+  actorUserId String
+  action      String
+  entityType  String
+  entityId    String
+  timestamp   DateTime @default(now())
+  metadataJson Json
+
+  actor User @relation(fields: [actorUserId], references: [id])
+}
+
+model ConsentRecord {
+  id         String   @id @default(cuid())
+  childId    String
+  actorUserId String
+  kind       String
+  grantedAt  DateTime
+  revokedAt  DateTime?
+
+  child ChildProfile @relation(fields: [childId], references: [id])
+}
+
+enum Role {
+  patient
+  parent
+  practitioner
+  admin
+}

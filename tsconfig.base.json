@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": [
+      "ES2022",
+      "DOM"
+    ],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "jsx": "react-jsx",
+    "resolveJsonModule": true,
+    "types": [
+      "node"
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@brightpath/ui/*": [
+        "packages/ui/src/*"
+      ],
+      "@brightpath/prom/*": [
+        "packages/prom/src/*"
+      ],
+      "@brightpath/types/*": [
+        "packages/types/src/*"
+      ]
+    }
+  }
+}
