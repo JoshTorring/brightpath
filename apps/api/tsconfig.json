@@ -4,7 +4,13 @@
     "outDir": "dist",
     "module": "CommonJS",
     "moduleResolution": "Node", 
-    "target": "ES2021"
+    "target": "ES2021",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "useDefineForClassFields": false,
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
   },
   "include": [
     "src/**/*"

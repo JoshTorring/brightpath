@@ -15,7 +15,7 @@
     ],
     "baseUrl": ".",
     "paths": {
-      "@brightpath/ui/*": [
+      "@brightpath/ui/src/*": [
         "packages/ui/src/*"
       ],
       "@brightpath/prom/*": [
