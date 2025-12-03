@@ -1,4 +1,27 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-body { background: #FAFAF5; color: #212B32; }
+
+:root {
+  color: #212b32;
+}
+
+body {
+  min-height: 100vh;
+}
+
+.page-gradient-home {
+  background: linear-gradient(135deg, #fdf1f0 0%, #e8f3ff 50%, #f2f4ff 100%);
+}
+
+.page-gradient-family {
+  background: linear-gradient(135deg, #fff4e6 0%, #ffe6f2 50%, #f4f7ff 100%);
+}
+
+.page-gradient-practitioner {
+  background: linear-gradient(135deg, #e7fff6 0%, #e7f2ff 50%, #f0f4ff 100%);
+}
+
+.page-gradient-default {
+  background: linear-gradient(135deg, #f4f7fb 0%, #edf5ff 50%, #f9f0ff 100%);
+}
