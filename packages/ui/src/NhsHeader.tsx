@@ -1,14 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import "./theme.css";
-
-const menuItems = [
-  { label: "Visit profile", href: "/profile" },
-  { label: "Log in", href: "/login" },
-  { label: "Log out", href: "/logout" },
-];
+import { AUTH_CHANGE_EVENT, AUTH_STORAGE_KEY, readAuthStatus } from "./auth";
 
 export const NhsHeader: React.FC<{ title?: string }> = ({ title = "BrightPath" }) => {
   const [open, setOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const toggleMenu = () => setOpen((prev) => !prev);
@@ -26,11 +22,33 @@ export const NhsHeader: React.FC<{ title?: string }> = ({ title = "BrightPath" }
   );
 
   useEffect(() => {
-    if (open) {
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
-    }
-  }, [open, handleClickOutside]);
+    const syncAuth = () => setIsLoggedIn(readAuthStatus());
+
+    syncAuth();
+
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === AUTH_STORAGE_KEY) {
+        syncAuth();
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    window.addEventListener("storage", handleStorage);
+    window.addEventListener(AUTH_CHANGE_EVENT, syncAuth);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener(AUTH_CHANGE_EVENT, syncAuth);
+    };
+  }, [handleClickOutside]);
+
+  const menuItems = isLoggedIn
+    ? [
+        { label: "Visit profile", href: "/profile" },
+        { label: "Log out", href: "/logout" },
+      ]
+    : [{ label: "Log in", href: "/login" }];
 
   return (
     <header style={{ background: "var(--bp-nhs-blue)", color: "white", padding: "12px 16px" }}>
