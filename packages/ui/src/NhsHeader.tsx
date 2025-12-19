@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import "./theme.css";
-import { AUTH_CHANGE_EVENT, AUTH_STORAGE_KEY, readAuthStatus } from "./auth";
+import { SESSION_CHANGE_EVENT, useSession } from "./auth";
 
 export const NhsHeader: React.FC<{ title?: string }> = ({ title = "BrightPath" }) => {
+  const { user, refresh } = useSession();
   const [open, setOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const toggleMenu = () => setOpen((prev) => !prev);
@@ -22,29 +22,20 @@ export const NhsHeader: React.FC<{ title?: string }> = ({ title = "BrightPath" }
   );
 
   useEffect(() => {
-    const syncAuth = () => setIsLoggedIn(readAuthStatus());
-
-    syncAuth();
-
-    const handleStorage = (event: StorageEvent) => {
-      if (event.key === AUTH_STORAGE_KEY) {
-        syncAuth();
-      }
-    };
-
     document.addEventListener("mousedown", handleClickOutside);
-    window.addEventListener("storage", handleStorage);
-    window.addEventListener(AUTH_CHANGE_EVENT, syncAuth);
+    window.addEventListener(SESSION_CHANGE_EVENT, refresh);
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
-      window.removeEventListener("storage", handleStorage);
-      window.removeEventListener(AUTH_CHANGE_EVENT, syncAuth);
+      window.removeEventListener(SESSION_CHANGE_EVENT, refresh);
     };
-  }, [handleClickOutside]);
+  }, [handleClickOutside, refresh]);
 
-  const menuItems = isLoggedIn
+  const menuItems = user
     ? [
+        user.role === "practitioner"
+          ? { label: "Practitioner panel", href: "/practitioner" }
+          : { label: "Family dashboard", href: "/family/dashboard" },
         { label: "Visit profile", href: "/profile" },
         { label: "Log out", href: "/logout" },
       ]
@@ -88,10 +79,21 @@ export const NhsHeader: React.FC<{ title?: string }> = ({ title = "BrightPath" }
               fontWeight: 600,
             }}
           >
-            <span style={{ width: 28, height: 28, borderRadius: "50%", background: "rgba(255,255,255,0.2)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>
+            <span
+              style={{
+                width: 28,
+                height: 28,
+                borderRadius: "50%",
+                background: "rgba(255,255,255,0.2)",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 14,
+              }}
+            >
               👤
             </span>
-            <span>Profile</span>
+            <span>{user?.name || "Profile"}</span>
             <span aria-hidden style={{ opacity: 0.8 }}>
               {open ? "▲" : "▼"}
             </span>

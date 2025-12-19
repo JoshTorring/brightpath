@@ -1,6 +1,8 @@
 "use client";
 import { Card } from "@brightpath/ui/src/Card";
 import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { useSession } from "@brightpath/ui/src/auth";
+import Link from "next/link";
 
 const data = [
   { week: "W1", score: 10, inattention: 12, hyperactivity: 8 },
@@ -10,6 +12,27 @@ const data = [
 ];
 
 export default function FamilyDashboard() {
+  const { user, loading } = useSession();
+
+  if (loading) {
+    return <Card title="Loading">Checking your session…</Card>;
+  }
+
+  if (!user) {
+    return (
+      <Card title="Log in required">
+        <p className="text-sm text-slate-700">Sign in to view your family dashboard.</p>
+        <Link className="text-nhs-blue underline" href="/login">
+          Go to login
+        </Link>
+      </Card>
+    );
+  }
+
+  if (user.role !== "parent" && user.role !== "patient") {
+    return <Card title="Access restricted">The family dashboard is only available to family accounts.</Card>;
+  }
+
   return (
     <div className="space-y-4">
       <Card title="Progress over time">

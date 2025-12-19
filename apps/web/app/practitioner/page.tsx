@@ -1,5 +1,7 @@
+"use client";
 import { Card } from "@brightpath/ui/src/Card";
 import Link from "next/link";
+import { useSession } from "@brightpath/ui/src/auth";
 
 const patients = [
   { id: "c1", name: "Alex", lastProm: "2025-10-20", change: "+5%" },
@@ -7,6 +9,20 @@ const patients = [
 ];
 
 export default function PractitionerPanel() {
+  const { user, loading } = useSession();
+
+  if (loading) {
+    return <Card title="Checking access">Loading your practitioner workspace…</Card>;
+  }
+
+  if (!user) {
+    return <Card title="Please sign in">You need to sign in to view patient panels.</Card>;
+  }
+
+  if (user.role !== "practitioner" && user.role !== "admin") {
+    return <Card title="Access restricted">This workspace is limited to practitioner accounts.</Card>;
+  }
+
   return (
     <Card title="Your patients">
       <table className="w-full text-left">

@@ -2,14 +2,21 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { writeAuthStatus } from "@brightpath/ui/src/auth";
+import { logoutRequest } from "@brightpath/ui/src/auth";
 
 export default function LogoutPage() {
   const router = useRouter();
 
   useEffect(() => {
-    writeAuthStatus(false);
-    const timer = setTimeout(() => router.push("/"), 800);
+    const run = async () => {
+      try {
+        await logoutRequest();
+      } finally {
+        router.push("/");
+      }
+    };
+    run();
+    const timer = setTimeout(() => router.push("/"), 1200);
     return () => clearTimeout(timer);
   }, [router]);
 
